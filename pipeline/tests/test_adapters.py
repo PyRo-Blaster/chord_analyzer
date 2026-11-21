@@ -1,6 +1,7 @@
 import json
 
 import pytest
+from jca_core.schema.records import ChordSegment
 
 from jca_pipeline.adapters import (
     AdapterError,
@@ -8,7 +9,6 @@ from jca_pipeline.adapters import (
     segments_from_btc,
     segments_from_lv_chordia,
 )
-from jca_core.schema.records import ChordSegment
 
 
 def write(tmp_path, data, name="raw.json"):

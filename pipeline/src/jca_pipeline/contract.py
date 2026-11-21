@@ -22,7 +22,7 @@ class WorkerRequest(FrozenModel):
     protocol: Literal[1] = PROTOCOL_VERSION
     worker: str = Field(min_length=1)
     inputs: dict[str, str]
-    params: dict[str, ParamValue] = {}
+    params: dict[str, ParamValue] = Field(default_factory=dict)
     output_dir: str
 
 
@@ -30,12 +30,12 @@ class WorkerResult(FrozenModel):
     protocol: Literal[1] = PROTOCOL_VERSION
     worker: str = Field(min_length=1)
     status: Literal["ok", "error"]
-    outputs: dict[str, str] = {}
+    outputs: dict[str, str] = Field(default_factory=dict)
     error: str | None = None
     seconds: float = Field(ge=0)
     peak_memory_bytes: int = Field(ge=0)
     device: str
-    versions: dict[str, str] = {}
+    versions: dict[str, str] = Field(default_factory=dict)
 
     @field_validator("outputs")
     @classmethod
