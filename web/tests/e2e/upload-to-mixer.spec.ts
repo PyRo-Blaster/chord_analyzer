@@ -80,3 +80,38 @@ test("a file in another format is refused before upload", async ({ page }) => {
   await expect(page.getByRole("alert")).toHaveText("Choose an MP3, WAV, FLAC or M4A file.");
   await expect(page.getByRole("button", { name: "Start analysis" })).toBeDisabled();
 });
+
+test("edit a chord, export the chart, and change the time signature", async ({ page }) => {
+  await page.goto("/");
+  await page.getByLabel(/Choose a recording/).setInputFiles({
+    name: "e2e-chart.wav",
+    mimeType: "audio/wav",
+    buffer: wav(8),
+  });
+  await page.getByRole("button", { name: "Piano trio" }).click();
+  await page.getByRole("button", { name: "Start analysis" }).click();
+
+  const chart = page.getByRole("region", { name: "Chord chart" });
+  await expect(chart.getByRole("group", { name: "Bar 4" })).toBeVisible({ timeout: 30_000 });
+  const bar2 = chart.getByRole("group", { name: "Bar 2" });
+  await expect(bar2.getByRole("button", { name: "Cmaj7, beats 1 2 3 4" })).toHaveClass(/agree-D/);
+
+  await bar2.getByRole("button", { name: "Cmaj7, beats 1 2 3 4" }).click();
+  const editor = page.getByRole("region", { name: "Edit chord" });
+  await expect(editor.getByText(/Edit bar 2.1 to 2.4/)).toBeVisible();
+  await editor.getByRole("button", { name: "BTC: Am7" }).click();
+  await expect(bar2.getByRole("button", { name: "Am7, beats 1 2 3 4" })).toHaveClass(/edited/);
+
+  await page.reload();
+  await expect(chart.getByRole("group", { name: "Bar 2" }).getByRole("button", { name: "Am7, beats 1 2 3 4" })).toBeVisible({
+    timeout: 15_000,
+  });
+  const text = await page.request.get((await chart.getByRole("link", { name: "Chart (text)" }).getAttribute("href")) ?? "");
+  expect(await text.text()).toBe("| Cmaj7 | Am7   | Cmaj7 | Cmaj7 |\n");
+
+  await chart.getByLabel("Time signature").selectOption("3");
+  await expect(page.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "100", { timeout: 30_000 });
+  await expect(chart.getByRole("group", { name: "Bar 6" })).toBeVisible();
+  await expect(chart.getByLabel("Time signature")).toHaveValue("3");
+  await expect(chart.getByRole("group", { name: "Bar 1" }).getByRole("button", { name: /^Beat \d of bar 1/ })).toHaveCount(3);
+});

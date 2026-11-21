@@ -68,6 +68,16 @@ export function select(current: Selection | null, index: number, extend: boolean
   return extend && current !== null ? { anchor: current.anchor, focus: index } : { anchor: index, focus: index };
 }
 
+/** Select beats `from`..`to` (a whole chord); with `extend`, stretch the selection to cover them. */
+export function selectRange(current: Selection | null, from: number, to: number, extend: boolean): Selection {
+  if (!extend || current === null) {
+    return { anchor: from, focus: to };
+  }
+  const low = Math.min(current.anchor, current.focus);
+  const high = Math.max(current.anchor, current.focus);
+  return to > high ? { anchor: low, focus: to } : { anchor: high, focus: Math.min(from, low) };
+}
+
 export function selectedIndices(selection: Selection | null): readonly number[] {
   if (selection === null) {
     return [];

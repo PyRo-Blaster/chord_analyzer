@@ -8,6 +8,7 @@ import {
   rowsOf,
   segmentsOf,
   select,
+  selectRange,
   selectedIndices,
   shown,
   tapTempo,
@@ -87,6 +88,14 @@ describe("selection", () => {
     expect(selectedIndices(select(one, 1, true))).toEqual([1, 2, 3]);
     expect(selectedIndices(select(one, 5, false))).toEqual([5]);
     expect(selectedIndices(null)).toEqual([]);
+  });
+
+  it("selects a whole chord, and extends by whole chords", () => {
+    const chord = selectRange(null, 4, 7, false);
+    expect(selectedIndices(chord)).toEqual([4, 5, 6, 7]);
+    expect(selectedIndices(selectRange(chord, 0, 3, true))).toEqual([0, 1, 2, 3, 4, 5, 6, 7]);
+    expect(selectedIndices(selectRange(chord, 8, 8, true))).toEqual([4, 5, 6, 7, 8]);
+    expect(selectedIndices(selectRange(null, 2, 2, true))).toEqual([2]);
   });
 
   it("makes one edit for each selected beat", () => {

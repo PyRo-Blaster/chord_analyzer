@@ -7,7 +7,7 @@ import { BarCell } from "./BarCell";
 import { ChordEditor } from "./ChordEditor";
 import { GridControls } from "./GridControls";
 import type { Selection } from "./model";
-import { barsOf, beatIndexAt, editsFor, loopRangeOf, rowsOf, select, selectedIndices } from "./model";
+import { barsOf, beatIndexAt, editsFor, loopRangeOf, rowsOf, select, selectRange, selectedIndices } from "./model";
 
 export interface PlaybackControl {
   position(): number;
@@ -151,7 +151,7 @@ export function ChartView({ trackId, client, playback, onRequeued }: Props) {
         </label>
       </div>
       <p className="legend hint">
-        Click a chord to select it, shift-click to extend. <span className="chord agree-A">A</span> same chord ·{" "}
+        Click a chord to select it, shift-click to extend; click a bass note below it to select one beat. <span className="chord agree-A">A</span> same chord ·{" "}
         <span className="chord agree-B">B</span> other extensions · <span className="chord agree-C">C</span> other class ·{" "}
         <span className="chord agree-D">D</span> other root. Agreement is not proof: both models can be wrong.
       </p>
@@ -189,6 +189,7 @@ export function ChartView({ trackId, client, playback, onRequeued }: Props) {
                 playingIndex={playingIndex}
                 profiles={profiles === null ? null : bar.beats.map((beat) => profiles[beat.index] ?? new Array<number>(12).fill(0))}
                 onSelect={(index, extend) => setSelection((current) => select(current, index, extend))}
+                onSelectRange={(from, to, extend) => setSelection((current) => selectRange(current, from, to, extend))}
                 onSeek={(time) => playback?.seek(time)}
               />
             ))}

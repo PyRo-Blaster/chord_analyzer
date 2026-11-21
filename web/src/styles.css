@@ -475,8 +475,22 @@ button.primary {
   border-color: var(--accent);
 }
 
-.model-lane span,
-.bass-lane span {
+.beat-cell {
+  border: none;
+  background: transparent;
+  padding: 0 4px;
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-align: left;
+  border-radius: 3px;
+}
+
+.beat-cell.selected {
+  background: color-mix(in srgb, var(--accent) 25%, transparent);
+  color: var(--ink);
+}
+
+.model-lane span {
   font-size: 0.75rem;
   color: var(--muted);
   white-space: nowrap;

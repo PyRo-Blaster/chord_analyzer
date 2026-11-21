@@ -88,15 +88,27 @@ describe("ChartView", () => {
     const { client } = await renderChart();
     await userEvent.click(within(screen.getByRole("group", { name: "Bar 2" })).getByRole("button", { name: /Cmaj7/ }));
     const editor = screen.getByRole("region", { name: "Edit chord" });
-    expect(within(editor).getByText(/Edit bar 2, beat 1/)).toBeInTheDocument();
+    expect(within(editor).getByText(/Edit bar 2.1 to 2.4/)).toBeInTheDocument();
     await userEvent.selectOptions(within(editor).getByLabelText("Root"), "D");
     await userEvent.selectOptions(within(editor).getByLabelText("Class"), "min");
     await userEvent.click(within(editor).getByLabelText("7"));
     await userEvent.click(within(editor).getByLabelText("b7"));
     expect(within(editor).getByLabelText("Preview")).toHaveTextContent("D min b7");
     await userEvent.click(within(editor).getByRole("button", { name: "Save" }));
-    expect(client.saveEdits).toHaveBeenCalledWith("t1", [{ time: 2, user_edit: D_MIN7 }]);
-    expect(await screen.findByRole("button", { name: /^Dm7, beats 1$/ })).toHaveClass("edited");
+    expect(client.saveEdits).toHaveBeenCalledWith("t1", [2, 2.5, 3, 3.5].map((time) => ({ time, user_edit: D_MIN7 })));
+    expect(await screen.findByRole("button", { name: /^Dm7, beats 1 2 3 4$/ })).toHaveClass("edited");
+  });
+
+  it("selects single beats from the bass row, to split a chord", async () => {
+    const { client } = await renderChart();
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: "Beat 3 of bar 2, bass C" }));
+    await user.keyboard("{Shift>}");
+    await user.click(screen.getByRole("button", { name: "Beat 4 of bar 2, bass C" }));
+    await user.keyboard("{/Shift}");
+    expect(screen.getByText(/Edit bar 2.3 to 2.4/)).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "lv-chordia: Cmaj7" }));
+    expect(vi.mocked(client.saveEdits).mock.calls[0]?.[1].map((edit) => edit.time)).toEqual([3, 3.5]);
   });
 
   it("extends the selection with shift and takes a model suggestion in one click", async () => {
@@ -107,10 +119,10 @@ describe("ChartView", () => {
     await user.keyboard("{Shift>}");
     await user.click(within(bar2).getByRole("button", { name: /Cmaj7/ }));
     await user.keyboard("{/Shift}");
-    expect(screen.getByText(/Edit bar 1.1 to 2.1/)).toBeInTheDocument();
+    expect(screen.getByText(/Edit bar 1.1 to 2.4/)).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "BTC: C" }));
     const sent = vi.mocked(client.saveEdits).mock.calls[0]?.[1] ?? [];
-    expect(sent.map((edit) => edit.time)).toEqual([0, 0.5, 1, 1.5, 2]);
+    expect(sent.map((edit) => edit.time)).toEqual([0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5]);
     expect(sent[0]?.user_edit).toEqual({ ...C_MAJ7, extensions: [] });
   });
 
@@ -137,7 +149,7 @@ describe("ChartView", () => {
     expect(playback?.seek).toHaveBeenCalledWith(2);
     await userEvent.click(within(screen.getByRole("group", { name: "Bar 2" })).getByRole("button", { name: /Cmaj7/ }));
     await userEvent.click(screen.getByRole("button", { name: "Loop selection" }));
-    expect(playback?.setLoop).toHaveBeenCalledWith({ start: 2, end: 2.5 });
+    expect(playback?.setLoop).toHaveBeenCalledWith({ start: 2, end: 4 });
   });
 
   it("highlights the beat that is playing", async () => {
@@ -152,7 +164,7 @@ describe("ChartView", () => {
     await userEvent.selectOptions(screen.getByLabelText("Time signature"), "3");
     expect(client.setGrid).toHaveBeenCalledWith("t1", { ...GRID, beats_per_bar: 3, first_downbeat_index: null });
     expect(onRequeued).toHaveBeenCalledWith(expect.objectContaining({ status: "queued" }));
-    await userEvent.click(within(screen.getByRole("group", { name: "Bar 2" })).getByRole("button", { name: /Cmaj7/ }));
+    await userEvent.click(screen.getByRole("button", { name: "Beat 1 of bar 2, bass C" }));
     await userEvent.click(screen.getByRole("button", { name: "Make this beat bar 1" }));
     expect(client.setGrid).toHaveBeenLastCalledWith("t1", { ...GRID, beats_per_bar: 4, first_downbeat_index: 4 });
   });

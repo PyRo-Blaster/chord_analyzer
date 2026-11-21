@@ -13,10 +13,11 @@ interface Props {
   readonly playingIndex: number;
   readonly profiles: readonly (readonly number[])[] | null;
   readonly onSelect: (index: number, extend: boolean) => void;
+  readonly onSelectRange: (from: number, to: number, extend: boolean) => void;
   readonly onSeek: (time: number) => void;
 }
 
-export function BarCell({ bar, selected, playingIndex, profiles, onSelect, onSeek }: Props) {
+export function BarCell({ bar, selected, playingIndex, profiles, onSelect, onSelectRange, onSeek }: Props) {
   const columns = { gridTemplateColumns: `repeat(${bar.beats.length}, 1fr)` };
   const first = bar.beats[0];
   const review = bar.beats.some((beat) => beat.needs_review);
@@ -46,8 +47,9 @@ export function BarCell({ bar, selected, playingIndex, profiles, onSelect, onSee
                 style={{ gridColumn: `span ${segment.beats.length}` }}
                 aria-label={`${label.symbol}, beats ${segment.beats.map((item) => item.beat).join(" ")}`}
                 title={`Agreement ${beat.agreement} · confidence ${Math.round(beat.confidence * 100)}%`}
-                onClick={(event: MouseEvent) => onSelect(beat.index, event.shiftKey)}
-                onDoubleClick={() => onSelect(segment.beats.at(-1)?.index ?? beat.index, true)}
+                onClick={(event: MouseEvent) =>
+                  onSelectRange(beat.index, segment.beats.at(-1)?.index ?? beat.index, event.shiftKey)
+                }
               >
                 <span className="tier1">{label.tier1}</span>
                 <span className="tier2" title={`confidence ${Math.round(beat.extensions_confidence * 100)}%`}>
@@ -60,9 +62,18 @@ export function BarCell({ bar, selected, playingIndex, profiles, onSelect, onSee
       </div>
       <ModelLane name="lv-chordia" beats={bar.beats} columns={columns} pick={(beat) => beat.lv_chordia.symbol} />
       <ModelLane name="BTC" beats={bar.beats} columns={columns} pick={(beat) => beat.btc.symbol} />
-      <div className="lane bass-lane" style={columns} aria-label="Bass">
+      <div className="lane beat-lane" style={columns} role="group" aria-label="Beats and bass notes">
         {bar.beats.map((beat) => (
-          <span key={beat.index}>{beat.bass_pitch_class ?? "·"}</span>
+          <button
+            key={beat.index}
+            type="button"
+            className={selected.has(beat.index) ? "beat-cell selected" : "beat-cell"}
+            aria-label={`Beat ${beat.beat} of bar ${beat.bar}, bass ${beat.bass_pitch_class ?? "none"}`}
+            title="Select this beat only, to split a chord (shift-click to extend)"
+            onClick={(event: MouseEvent) => onSelect(beat.index, event.shiftKey)}
+          >
+            {beat.bass_pitch_class ?? "·"}
+          </button>
         ))}
       </div>
       <EvidenceStrip profiles={profiles} />
