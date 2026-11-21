@@ -14,6 +14,7 @@ from jca_pipeline.runner import SubprocessRunner
 from pydantic import ValidationError
 from starlette.exceptions import HTTPException
 
+from jca_api.chart_routes import register_chart_routes
 from jca_api.config import Settings
 from jca_api.fake_runner import FakeModelRunner
 from jca_api.jobs import JobNotFound, JobOptions, JobRepository
@@ -119,6 +120,7 @@ def create_app(
             content_disposition_type="attachment" if download else "inline",
         )
 
+    register_chart_routes(app, jobs, settings.data_dir)
     return app
 
 

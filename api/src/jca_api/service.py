@@ -124,6 +124,8 @@ class JobService:
                 other=tuple(options.other),
                 beats_per_bar=options.beats_per_bar,
                 first_downbeat_index=options.first_downbeat_index,
+                tempo_bpm=options.tempo_bpm,
+                first_beat_time=options.first_beat_time,
             )
         except ValueError as error:
             raise InvalidUpload(str(error)) from error
