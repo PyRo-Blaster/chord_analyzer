@@ -1,0 +1,44 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "api",
+      "runtimeExecutable": "uv",
+      "runtimeArgs": [
+        "run",
+        "--directory",
+        "api",
+        "jca-serve",
+        "--port",
+        "8000"
+      ],
+      "port": 8000
+    },
+    {
+      "name": "api-fake",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "JCA_FAKE_PIPELINE=1",
+        "JCA_DATA_DIR=data/app-fake",
+        "uv",
+        "run",
+        "--directory",
+        "api",
+        "jca-serve",
+        "--port",
+        "8000"
+      ],
+      "port": 8000
+    },
+    {
+      "name": "web",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--dir",
+        "web",
+        "dev"
+      ],
+      "port": 5173
+    }
+  ]
+}
