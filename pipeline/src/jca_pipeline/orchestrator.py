@@ -17,7 +17,7 @@ from jca_pipeline.stages.decoding import run_decoding
 from jca_pipeline.stages.ingest import run_ingest
 from jca_pipeline.stages.recognition import run_recognition
 from jca_pipeline.stages.separation import run_separation
-from jca_pipeline.stages.tracking import run_tracking
+from jca_pipeline.stages.tracking import GridSettings, run_tracking
 from jca_pipeline.state import (
     RunState,
     Stage,
@@ -52,16 +52,24 @@ class AnalysisRequest:
     other: tuple[str, ...] = ()
     beats_per_bar: int | None = None
     first_downbeat_index: int | None = None
+    tempo_bpm: float | None = None
+    first_beat_time: float | None = None
     chord_input: ChordInput = "no_drums"
     primary: PrimaryModel = "lv_chordia"
 
     def __post_init__(self) -> None:
-        if self.first_downbeat_index is not None and self.beats_per_bar is None:
-            raise ValueError("Set beats_per_bar to move the first downbeat")
-        if self.beats_per_bar is not None and self.beats_per_bar < 1:
-            raise ValueError(f"beats_per_bar must be at least 1, got {self.beats_per_bar}")
+        _ = self.grid  # building it validates the grid fields
         if self.chord_input not in ("no_drums", "full_mix"):
             raise ValueError(f"chord_input must be no_drums or full_mix, got {self.chord_input}")
+
+    @property
+    def grid(self) -> GridSettings:
+        return GridSettings(
+            beats_per_bar=self.beats_per_bar,
+            first_downbeat_index=self.first_downbeat_index,
+            tempo_bpm=self.tempo_bpm,
+            first_beat_time=self.first_beat_time,
+        )
 
 
 def run_dir_for(out_root: Path, audio_sha256: str) -> Path:
@@ -94,7 +102,12 @@ def analyze(
         "uploaded": sha,
         "separating": separation_key,
         "tracking": tracking_key(
-            sha, TRACKER.model, request.beats_per_bar, request.first_downbeat_index
+            sha,
+            TRACKER.model,
+            request.beats_per_bar,
+            request.first_downbeat_index,
+            tempo_bpm=request.tempo_bpm,
+            first_beat_time=request.first_beat_time,
         ),
     }
     keys["recognising"] = recognition_key(
@@ -128,12 +141,7 @@ def analyze(
         (
             "tracking",
             lambda: run_tracking(
-                out("uploaded", "source"),
-                run_dir,
-                keys["tracking"],
-                runner,
-                request.beats_per_bar,
-                request.first_downbeat_index,
+                out("uploaded", "source"), run_dir, keys["tracking"], runner, request.grid
             ),
         ),
         (

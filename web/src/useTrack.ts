@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { ApiClient } from "./api/client";
 import type { Track } from "./api/types";
 
@@ -9,11 +9,15 @@ const ACTIVE = new Set(["queued", "running"]);
 export interface TrackState {
   readonly track: Track | null;
   readonly error: string | null;
+  /** Start polling again, for example after the job was put back in the queue. */
+  readonly refresh: () => void;
 }
 
 /** Load a track and poll it while its job is queued or running. */
 export function useTrack(client: ApiClient, id: string, pollMs: number = POLL_MILLISECONDS): TrackState {
-  const [state, setState] = useState<TrackState>({ track: null, error: null });
+  const [state, setState] = useState<Omit<TrackState, "refresh">>({ track: null, error: null });
+  const [version, setVersion] = useState(0);
+  const refresh = useCallback(() => setVersion((current) => current + 1), []);
 
   useEffect(() => {
     let stopped = false;
@@ -40,13 +44,12 @@ export function useTrack(client: ApiClient, id: string, pollMs: number = POLL_MI
       }
     }
 
-    setState({ track: null, error: null });
     void load();
     return () => {
       stopped = true;
       clearTimeout(timer);
     };
-  }, [client, id, pollMs]);
+  }, [client, id, pollMs, version]);
 
-  return state;
+  return { ...state, refresh };
 }

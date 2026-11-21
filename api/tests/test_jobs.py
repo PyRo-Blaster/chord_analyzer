@@ -101,3 +101,56 @@ def test_the_repository_works_from_several_threads(repository):
         thread.join()
     assert errors == []
     assert len(repository.recent(limit=100)) == 40
+
+
+def test_edits_are_stored_by_beat_time_and_replace_earlier_ones(repository):
+    from jca_core.chords.parts import ChordParts
+
+    from jca_api.jobs import ChartEdit
+
+    job = new_job(repository)
+    d_minor = ChordParts.model_validate({"root": "D", "class": "min", "extensions": ["b7"]})
+    g_seven = ChordParts.model_validate({"root": "G", "class": "dom7"})
+    repository.save_edits(
+        job.id, [ChartEdit(time=0.5, user_edit=d_minor), ChartEdit(time=1.0, user_edit=d_minor)]
+    )
+    saved = repository.save_edits(job.id, [ChartEdit(time=1.0, user_edit=g_seven)])
+    assert [(edit.time, edit.user_edit.root) for edit in saved.edits] == [(0.5, "D"), (1.0, "G")]
+    cleared = repository.save_edits(job.id, [ChartEdit(time=0.5, user_edit=None)])
+    assert [edit.time for edit in cleared.edits] == [1.0]
+
+
+def test_requeue_for_a_new_grid_keeps_the_stages_before_tracking(repository):
+    job = new_job(repository)
+    repository.mark_running(job.id, run_dir="/runs/abc")
+    for stage in ("uploaded", "separating", "tracking", "recognising", "decoded"):
+        repository.add_finished_stage(job.id, stage)
+    repository.mark_done(job.id, warnings=[])
+    options = job.options.model_copy(
+        update={"beats_per_bar": 3, "tempo_bpm": 96.0, "first_beat_time": 0.2}
+    )
+    requeued = repository.requeue_with_options(job.id, options)
+    assert requeued.status == "queued"
+    assert requeued.finished_stages == ("uploaded", "separating")
+    assert requeued.options.beats_per_bar == 3
+    assert requeued.options.tempo_bpm == 96.0
+
+
+def test_an_older_table_without_edits_is_migrated(tmp_path):
+    import sqlite3
+
+    path = tmp_path / "old.sqlite3"
+    connection = sqlite3.connect(path)
+    connection.execute(
+        "CREATE TABLE jobs (id TEXT PRIMARY KEY, created_at TEXT NOT NULL, filename TEXT NOT NULL,"
+        " audio_path TEXT NOT NULL, options TEXT NOT NULL, status TEXT NOT NULL,"
+        " finished_stages TEXT NOT NULL DEFAULT '[]', run_dir TEXT, error TEXT,"
+        " warnings TEXT NOT NULL DEFAULT '[]')"
+    )
+    connection.execute(
+        "INSERT INTO jobs (id, created_at, filename, audio_path, options, status)"
+        " VALUES ('a', '2026-11-20', 'x.wav', '/x.wav', '{\"instruments\": [\"piano\"]}', 'done')"
+    )
+    connection.commit()
+    connection.close()
+    assert JobRepository(path).get("a").edits == ()

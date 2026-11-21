@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ApiError, createClient } from "./client";
+import { ApiError, createClient, exportUrl } from "./client";
 
 const CATALOGUE = { instruments: ["piano"], horns: [], presets: [] };
 const TRACK = {
@@ -74,5 +74,38 @@ describe("api client", () => {
     const fetcher = respond(200, { success: true, data: TRACK, error: null });
     await expect(createClient(fetcher).track("a b")).resolves.toEqual(TRACK);
     expect(fetcher).toHaveBeenCalledWith("/api/tracks/a%20b", undefined);
+  });
+});
+
+describe("chart calls", () => {
+  const VIEW = {
+    beats: [],
+    duration: 8,
+    unplaced_edits: 0,
+    grid: { beats_per_bar: null, first_downbeat_index: null, tempo_bpm: null, first_beat_time: null },
+  };
+
+  it("saves edits with a JSON PATCH", async () => {
+    const fetcher = respond(200, { success: true, data: VIEW, error: null });
+    const edit = { time: 2, user_edit: { root: "D", class: "min" as const, extensions: ["b7"], bass: "D" } };
+    await createClient(fetcher).saveEdits("t1", [edit]);
+    const [url, init] = fetcher.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe("/api/tracks/t1/chart");
+    expect(init.method).toBe("PATCH");
+    expect(JSON.parse(init.body as string)).toEqual({ edits: [edit] });
+  });
+
+  it("sends a grid change and reads evidence and exports", async () => {
+    const fetcher = respond(202, { success: true, data: TRACK, error: null });
+    await createClient(fetcher).setGrid("t1", { ...VIEW.grid, beats_per_bar: 3 });
+    expect(fetcher.mock.calls[0]?.[0]).toBe("/api/tracks/t1/grid");
+    const evidence = respond(200, { success: true, data: { source: "bass", profiles: [Array(12).fill(0.5)] }, error: null });
+    await expect(createClient(evidence).evidence("t1", "bass")).resolves.toMatchObject({ source: "bass" });
+    expect(evidence.mock.calls[0]?.[0]).toBe("/api/tracks/t1/evidence?source=bass");
+    expect(exportUrl("t 1", "stems")).toBe("/api/tracks/t%201/export?format=stems");
+  });
+
+  it("reads the chord view", async () => {
+    await expect(createClient(respond(200, { success: true, data: VIEW, error: null })).chords("t1")).resolves.toEqual(VIEW);
   });
 });

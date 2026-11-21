@@ -44,6 +44,7 @@ _NAME_ORDER = (
     "2", "3", "4", "b5", "5", "#5", "6", "bb7", "b7", "7",
     "b9", "9", "#9", "11", "#11", "b13", "13",
 )  # fmt: skip
+EXTENSION_NAMES: tuple[str, ...] = _NAME_ORDER  # every degree name extension_names can return
 
 
 def classify(intervals: frozenset[int]) -> Jazz5 | None:
