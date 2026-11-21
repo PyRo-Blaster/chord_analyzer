@@ -28,10 +28,10 @@ def bar(number: int, *labels: str) -> list[ChartRecord]:
 def test_four_bars_on_each_line():
     labels = ["D:min7", "G:7", "C:maj7", "C:maj7", "F:maj7", "B:hdim7", "E:7", "A:min7"]
     records = [r for number, label in enumerate(labels, start=1) for r in bar(number, label)]
-    assert text_chart(records) == (
-        "| Dm7   | G7    | Cmaj7 | Cmaj7 |\n"
-        "| Fmaj7 | Bm7b5 | E7    | Am7   |\n"
-    )
+    assert text_chart(records).splitlines() == [
+        "| Dm7   | G7    | Cmaj7 | Cmaj7 |",
+        "| Fmaj7 | Bm7b5 | E7    | Am7   |",
+    ]
 
 
 def test_two_chords_that_split_a_bar_in_half():
@@ -52,10 +52,10 @@ def test_a_user_edit_replaces_the_draft():
 
 def test_a_pickup_bar_leads_the_first_line():
     records = [record(0, 1, "G:7")] + [r for number in range(1, 6) for r in bar(number, "C:maj")]
-    assert text_chart(records) == (
-        "| G7 | C  | C  | C  | C  |\n"
-        "| C  |\n"
-    )
+    assert text_chart(records).splitlines() == [
+        "| G7 | C  | C  | C  | C  |",
+        "| C  |",
+    ]
 
 
 def test_no_chord_is_written_as_nc():

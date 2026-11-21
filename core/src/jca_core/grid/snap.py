@@ -42,9 +42,7 @@ def _snap(time: float, edges: tuple[float, ...], bar_lines: frozenset[float]) ->
     index = bisect_left(edges, time)
     candidates = edges[max(0, index - 1) : index + 1]
     nearest = min(abs(time - edge) for edge in candidates)
-    tied = tuple(
-        edge for edge in candidates if abs(time - edge) - nearest <= TIE_TOLERANCE_SECONDS
-    )
+    tied = tuple(edge for edge in candidates if abs(time - edge) - nearest <= TIE_TOLERANCE_SECONDS)
     on_bar_line = tuple(edge for edge in tied if edge in bar_lines)
     return (on_bar_line or tied)[0]
 

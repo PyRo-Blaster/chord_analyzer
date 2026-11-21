@@ -79,9 +79,7 @@ def test_a_bass_note_off_beat_one_is_not_checked():
 
 
 def test_no_chordal_instrument_halves_the_confidence():
-    record = decode(
-        GRID, whole("C:maj"), whole("C:maj"), NO_BASS, has_chordal_instrument=False
-    )[0]
+    record = decode(GRID, whole("C:maj"), whole("C:maj"), NO_BASS, has_chordal_instrument=False)[0]
     assert record.confidence == 0.4
     assert record.extensions_confidence == 0.3
 

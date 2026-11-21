@@ -45,9 +45,7 @@ class ParsedChord:
 def parse_chord(label: str) -> ParsedChord:
     """Parse one Harte label. Raises InvalidChordLabelError for a bad label."""
     try:
-        root_number, bitmap, bass_number = mir_eval.chord.encode(
-            label, reduce_extended_chords=True
-        )
+        root_number, bitmap, bass_number = mir_eval.chord.encode(label, reduce_extended_chords=True)
         root_name = mir_eval.chord.split(label, reduce_extended_chords=True)[0]
     except mir_eval.chord.InvalidChordException as error:
         raise InvalidChordLabelError(f"Invalid chord label: {label!r}") from error
