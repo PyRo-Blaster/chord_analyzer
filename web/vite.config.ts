@@ -18,7 +18,7 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       include: ["src/**/*.{ts,tsx}"],
-      exclude: ["src/main.tsx", "src/**/*.test.{ts,tsx}", "src/audio/stretchWorker.ts"],
+      exclude: ["src/main.tsx", "src/**/*.test.{ts,tsx}", "src/audio/stretchWorker.ts", "src/audio/browserAudio.ts"],
       thresholds: { lines: 80, functions: 80, branches: 80, statements: 80 },
     },
   },

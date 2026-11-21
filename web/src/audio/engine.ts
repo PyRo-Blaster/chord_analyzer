@@ -28,7 +28,8 @@ interface SourceLike extends NodeLike {
   loop: boolean;
   loopStart: number;
   loopEnd: number;
-  onended: (() => void) | null;
+  // `never` parameters let the real AudioBufferSourceNode handler type fit this one.
+  onended: ((this: never, event: never) => unknown) | null;
   start(when: number, offset: number): void;
   stop(): void;
 }
