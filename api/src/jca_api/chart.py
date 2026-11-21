@@ -46,6 +46,7 @@ InvalidEdit = InvalidRequest
 
 class LabelView(FrozenModel):
     label: str
+    parts: ChordParts
     symbol: str
     tier1: str
     tier2: str
@@ -261,7 +262,11 @@ def _check_parts(parts: ChordParts) -> None:
 def _label_view(label: str) -> LabelView:
     parts = chord_parts(parse_chord(label))
     return LabelView(
-        label=label, symbol=chord_symbol(parts), tier1=_tier1(parts), tier2=_tier2(parts)
+        label=label,
+        parts=parts,
+        symbol=chord_symbol(parts),
+        tier1=_tier1(parts),
+        tier2=_tier2(parts),
     )
 
 

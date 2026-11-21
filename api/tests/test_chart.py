@@ -62,6 +62,9 @@ def test_the_view_has_one_beat_with_both_models_and_the_draft(job):
     assert (first.index, first.bar, first.beat, first.time) == (0, 1, 1, 0.0)
     assert (first.lv_chordia.label, first.lv_chordia.symbol) == ("C:maj7", "Cmaj7")
     assert (first.btc.label, first.btc.symbol) == ("C:maj", "C")
+    assert first.btc.parts.model_dump(mode="json") == {
+        "root": "C", "class": "maj", "extensions": [], "bass": "C",
+    }  # fmt: skip
     assert first.agreement == "B"
     assert (first.draft.tier1, first.draft.tier2, first.draft.symbol) == ("C maj", "7", "Cmaj7")
     assert first.user_edit is None
