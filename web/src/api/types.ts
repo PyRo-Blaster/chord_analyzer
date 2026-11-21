@@ -69,7 +69,7 @@ export const ChordPartsSchema = z.object({
 });
 
 const TierSchema = z.object({ symbol: z.string(), tier1: z.string(), tier2: z.string() });
-export const LabelViewSchema = TierSchema.extend({ label: z.string() });
+export const LabelViewSchema = TierSchema.extend({ label: z.string(), parts: ChordPartsSchema });
 export const PartsViewSchema = TierSchema.extend({ parts: ChordPartsSchema });
 
 export const BeatViewSchema = z.object({

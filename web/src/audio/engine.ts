@@ -87,6 +87,10 @@ export class MixerEngine {
     return this.currentSpeed;
   }
 
+  get loopRange(): LoopRange | null {
+    return this.loop;
+  }
+
   get duration(): number {
     const first = Object.values(this.buffersBySpeed.get(1) ?? {})[0];
     return first?.duration ?? 0;

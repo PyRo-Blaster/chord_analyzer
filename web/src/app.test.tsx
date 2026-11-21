@@ -33,10 +33,10 @@ function client(trackReplies: Track[] = []): ApiClient {
     tracks: vi.fn().mockResolvedValue([track("done", 5)]),
     track: getTrack,
     upload: vi.fn(),
-    chords: vi.fn(),
+    chords: vi.fn(() => new Promise<never>(() => undefined)),
     saveEdits: vi.fn(),
     setGrid: vi.fn(),
-    evidence: vi.fn(),
+    evidence: vi.fn(() => new Promise<never>(() => undefined)),
   };
 }
 

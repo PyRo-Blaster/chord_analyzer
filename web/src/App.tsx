@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { ApiClient } from "./api/client";
 import type { Catalogue, Track } from "./api/types";
 import type { AudioService } from "./audio/browserAudio";
+import { ChartView } from "./chart/ChartView";
 import { Mixer } from "./mixer/Mixer";
 import { JobProgress } from "./upload/JobProgress";
 import { UploadPanel } from "./upload/UploadPanel";
@@ -104,7 +105,7 @@ interface TrackPageProps {
 }
 
 function TrackPage({ client, id, createAudio, pollMs }: TrackPageProps) {
-  const { track, error } = useTrack(client, id, pollMs);
+  const { track, error, refresh } = useTrack(client, id, pollMs);
   const audio = useMemo(() => (track !== null && track.stems.length > 0 ? createAudio() : null), [
     createAudio,
     track !== null && track.stems.length > 0,
@@ -123,6 +124,9 @@ function TrackPage({ client, id, createAudio, pollMs }: TrackPageProps) {
     <>
       <JobProgress track={track} />
       {audio !== null ? <Mixer stems={track.stems} trackName={track.filename} audio={audio} /> : null}
+      {track.status === "done" ? (
+        <ChartView key={track.created_at + track.stages.map((stage) => stage.state).join()} trackId={track.id} client={client} playback={audio?.engine ?? null} onRequeued={refresh} />
+      ) : null}
     </>
   );
 }

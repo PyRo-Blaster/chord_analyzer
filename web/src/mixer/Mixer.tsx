@@ -59,6 +59,8 @@ export function Mixer({ stems, trackName, audio }: Props) {
     let frame = 0;
     const tick = () => {
       setPosition(engine.position());
+      const engineLoop = engine.loopRange; // a loop can also be set from the chord chart
+      setLoop((current) => (current === engineLoop ? current : engineLoop));
       frame = requestAnimationFrame(tick);
     };
     frame = requestAnimationFrame(tick);
