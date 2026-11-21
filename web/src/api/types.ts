@@ -1,24 +1,55 @@
-export type JobStatus = "queued" | "running" | "done" | "failed";
-export type StageState = "waiting" | "running" | "done" | "failed";
-export type StemKind = "stem" | "residue";
+import { z } from "zod";
 
-export interface Envelope<T> {
+// Every API reply is checked against these schemas: data from the server is not trusted.
+
+export const JobStatusSchema = z.enum(["queued", "running", "done", "failed"]);
+export const StageStateSchema = z.enum(["waiting", "running", "done", "failed"]);
+
+export const PresetSchema = z.object({
+  id: z.string(),
+  label: z.string(),
+  instruments: z.array(z.string()),
+  horn_counts: z.record(z.string(), z.number().int().positive()),
+});
+
+export const CatalogueSchema = z.object({
+  instruments: z.array(z.string()).min(1),
+  horns: z.array(z.string()),
+  presets: z.array(PresetSchema),
+});
+
+export const StageViewSchema = z.object({ name: z.string(), state: StageStateSchema });
+
+export const StemViewSchema = z.object({
+  name: z.string().min(1),
+  kind: z.enum(["stem", "residue"]),
+  url: z.string().startsWith("/api/"),
+});
+
+export const TrackSchema = z.object({
+  id: z.string().min(1),
+  filename: z.string(),
+  created_at: z.string(),
+  status: JobStatusSchema,
+  progress: z.number().min(0).max(1),
+  stages: z.array(StageViewSchema),
+  warnings: z.array(z.string()),
+  error: z.string().nullable(),
+  stems: z.array(StemViewSchema),
+});
+
+export type JobStatus = z.infer<typeof JobStatusSchema>;
+export type StageState = z.infer<typeof StageStateSchema>;
+export type Preset = Readonly<z.infer<typeof PresetSchema>>;
+export type Catalogue = Readonly<z.infer<typeof CatalogueSchema>>;
+export type StageView = Readonly<z.infer<typeof StageViewSchema>>;
+export type StemView = Readonly<z.infer<typeof StemViewSchema>>;
+export type Track = Readonly<z.infer<typeof TrackSchema>>;
+
+export interface Envelope {
   readonly success: boolean;
-  readonly data: T | null;
+  readonly data: unknown;
   readonly error: string | null;
-}
-
-export interface Preset {
-  readonly id: string;
-  readonly label: string;
-  readonly instruments: readonly string[];
-  readonly horn_counts: Readonly<Record<string, number>>;
-}
-
-export interface Catalogue {
-  readonly instruments: readonly string[];
-  readonly horns: readonly string[];
-  readonly presets: readonly Preset[];
 }
 
 export interface JobOptions {
@@ -26,27 +57,4 @@ export interface JobOptions {
   readonly horn_counts: Readonly<Record<string, number>>;
   readonly other: readonly string[];
   readonly beats_per_bar: number | null;
-}
-
-export interface StageView {
-  readonly name: string;
-  readonly state: StageState;
-}
-
-export interface StemView {
-  readonly name: string;
-  readonly kind: StemKind;
-  readonly url: string;
-}
-
-export interface Track {
-  readonly id: string;
-  readonly filename: string;
-  readonly created_at: string;
-  readonly status: JobStatus;
-  readonly progress: number;
-  readonly stages: readonly StageView[];
-  readonly warnings: readonly string[];
-  readonly error: string | null;
-  readonly stems: readonly StemView[];
 }

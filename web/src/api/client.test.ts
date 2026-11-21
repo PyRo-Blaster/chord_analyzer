@@ -1,6 +1,19 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ApiError, createClient } from "./client";
 
+const CATALOGUE = { instruments: ["piano"], horns: [], presets: [] };
+const TRACK = {
+  id: "a b",
+  filename: "take.wav",
+  created_at: "2026-11-21T10:00:00.000+00:00",
+  status: "queued",
+  progress: 0,
+  stages: [{ name: "uploaded", state: "waiting" }],
+  warnings: [],
+  error: null,
+  stems: [{ name: "piano", kind: "stem", url: "/api/tracks/a%20b/stems/piano" }],
+};
+
 function respond(status: number, body: unknown) {
   return vi.fn().mockResolvedValue(
     new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } }),
@@ -10,16 +23,28 @@ function respond(status: number, body: unknown) {
 afterEach(() => vi.restoreAllMocks());
 
 describe("api client", () => {
-  it("returns the data of a success envelope", async () => {
-    const fetcher = respond(200, { success: true, data: { instruments: ["piano"] }, error: null });
-    const client = createClient(fetcher);
-    await expect(client.catalogue()).resolves.toEqual({ instruments: ["piano"] });
+  it("returns the checked data of a success envelope", async () => {
+    const fetcher = respond(200, { success: true, data: CATALOGUE, error: null });
+    await expect(createClient(fetcher).catalogue()).resolves.toEqual(CATALOGUE);
     expect(fetcher).toHaveBeenCalledWith("/api/instruments", undefined);
   });
 
   it("throws the server message of an error envelope", async () => {
     const client = createClient(respond(400, { success: false, data: null, error: "Unknown instrument 'banjo'" }));
     await expect(client.track("x")).rejects.toThrow(new ApiError("Unknown instrument 'banjo'", 400));
+  });
+
+  it("rejects a reply that does not match the schema", async () => {
+    const reply = { success: true, data: { ...TRACK, status: "exploded" }, error: null };
+    await expect(createClient(respond(200, reply)).track("x")).rejects.toThrow(
+      "The server sent an unexpected reply (status)",
+    );
+  });
+
+  it("rejects a stem link that points away from the API", async () => {
+    const stems = [{ name: "piano", kind: "stem", url: "https://example.com/x.flac" }];
+    const reply = { success: true, data: [{ ...TRACK, stems }], error: null };
+    await expect(createClient(respond(200, reply)).tracks()).rejects.toThrow("stems.0.url");
   });
 
   it("throws a readable error when the reply is not JSON", async () => {
@@ -33,7 +58,7 @@ describe("api client", () => {
   });
 
   it("uploads the file and the options as a form", async () => {
-    const fetcher = respond(201, { success: true, data: { id: "abc" }, error: null });
+    const fetcher = respond(201, { success: true, data: TRACK, error: null });
     const file = new File(["audio"], "take.wav", { type: "audio/wav" });
     const options = { instruments: ["piano"], horn_counts: {}, other: [], beats_per_bar: null };
     await createClient(fetcher).upload(file, options);
@@ -46,8 +71,8 @@ describe("api client", () => {
   });
 
   it("asks for one track by id", async () => {
-    const fetcher = respond(200, { success: true, data: { id: "a b" }, error: null });
-    await createClient(fetcher).track("a b");
+    const fetcher = respond(200, { success: true, data: TRACK, error: null });
+    await expect(createClient(fetcher).track("a b")).resolves.toEqual(TRACK);
     expect(fetcher).toHaveBeenCalledWith("/api/tracks/a%20b", undefined);
   });
 });
