@@ -1,0 +1,12 @@
+[project]
+name = "beats-madmom"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "cython>=3.3.1",
+    "madmom",
+    "numpy<2",
+]
+
+[tool.uv.sources]
+madmom = { git = "https://github.com/CPJKU/madmom.git" }

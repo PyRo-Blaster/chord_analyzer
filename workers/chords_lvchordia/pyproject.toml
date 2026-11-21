@@ -1,0 +1,7 @@
+[project]
+name = "chords-lvchordia"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "lv-chordia>=1.1.0",
+]
