@@ -89,3 +89,109 @@ jobs:
 
       - name: Format
         run: uvx ruff@0.17.5 format --check .
+
+  api:
+    name: api (lint, format, tests)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: api
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          enable-cache: true
+          cache-dependency-glob: |
+            core/uv.lock
+            pipeline/uv.lock
+            api/uv.lock
+
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install --yes --no-install-recommends ffmpeg
+
+      - name: Install
+        run: uv sync --locked
+
+      - name: Lint
+        run: uv run ruff check .
+
+      - name: Format
+        run: uv run ruff format --check .
+
+      - name: Tests with coverage gate
+        run: uv run pytest --cov --cov-report=term-missing
+
+  web:
+    name: web (types, tests, build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+
+      - name: Install pnpm
+        run: corepack enable
+
+      - name: Install
+        run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Type check
+        run: pnpm typecheck
+
+      - name: Unit tests with coverage gate
+        run: pnpm test:coverage
+
+      - name: Build
+        run: pnpm exec vite build
+
+  e2e:
+    name: end to end (fake models)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: web
+    env:
+      PLAYWRIGHT_CHANNEL: chromium
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          enable-cache: true
+          cache-dependency-glob: |
+            core/uv.lock
+            pipeline/uv.lock
+            api/uv.lock
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install --yes --no-install-recommends ffmpeg
+
+      - name: Install
+        run: |
+          corepack enable
+          pnpm install --frozen-lockfile --ignore-scripts
+          uv sync --locked --directory ../api
+          pnpm exec playwright install --with-deps chromium
+
+      - name: Playwright
+        run: pnpm e2e
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: failure()
+        with:
+          name: playwright-traces
+          path: web/test-results/
+          retention-days: 7
