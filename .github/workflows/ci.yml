@@ -39,3 +39,53 @@ jobs:
 
       - name: Tests with coverage gate
         run: uv run pytest --cov --cov-report=term-missing
+
+  pipeline:
+    name: pipeline (lint, format, tests without models)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: pipeline
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          enable-cache: true
+          cache-dependency-glob: |
+            core/uv.lock
+            pipeline/uv.lock
+
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install --yes --no-install-recommends ffmpeg
+
+      - name: Install
+        run: uv sync --locked
+
+      - name: Lint
+        run: uv run ruff check .
+
+      - name: Format
+        run: uv run ruff format --check .
+
+      - name: Tests with coverage gate (model tests are excluded)
+        run: uv run pytest --cov --cov-report=term-missing
+
+  workers:
+    name: workers (lint, format)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: workers
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+
+      - name: Lint
+        run: uvx ruff@0.17.5 check .
+
+      - name: Format
+        run: uvx ruff@0.17.5 format --check .

@@ -67,8 +67,31 @@ Each task is test-first: write the test, see it fail, write the code, see it pas
 
 ## Exit gate
 
-- [ ] `pytest` in `pipeline/` passes with coverage above 80%, and `core/` still passes.
-- [ ] `pytest -m model` passes on this computer.
-- [ ] `jca-analyze` on the synthetic track writes stems, beats, both chord outputs, `analysis.json` and `chart.txt`, and prints the stage table.
-- [ ] A second identical run calls no worker.
+- [x] `pytest` in `pipeline/` passes with coverage above 80% (111 tests, 99%), and `core/` still passes (323 tests).
+- [x] `pytest -m model` passes on this computer (4 tests, 36 s).
+- [x] `jca-analyze` on the synthetic track writes stems, beats, both chord outputs, `analysis.json` and `chart.txt`, and prints the stage table.
+- [x] A second identical run calls no worker (1.8 s, every stage cached).
 - [ ] Part 2 of Phase 0 (the real recordings) is still open and does not block this gate.
+
+## Results of the real run (Nov 21, 2026)
+
+The 5-minute synthetic trio track, with piano, double bass and drums, on the M1 Pro:
+
+| Stage | Time | Worker | Worker time | Peak memory | Device |
+| --- | --- | --- | --- | --- | --- |
+| uploaded | 0.4 s | | | | |
+| separating | 279.5 s | separate_bsroformer | 276.8 s | 3.0 GB | MPS |
+| tracking | 6.4 s | beats_beatthis | 6.0 s | 1.0 GB | CPU |
+| recognising | 22.0 s | chords_lvchordia, chords_btc | 14.3 s, 6.6 s | 5.4 GB, 0.7 GB | CPU |
+| decoded | 1.1 s | | | | |
+| **Total** | **5 min 13 s** | | | | |
+
+- Chart: `Dm7 | G9 | Cmaj7 | A9` on most lines, which matches the voicings (the G and A voicings contain the 9th). A few bars read A7.
+- Agreement over 601 beats: A 179, B 255, C 6, D 161; 167 beats marked for review, almost all where BTC reads a rootless voicing as another root.
+- The bass check on beat 1 found D, G, C and A, the true roots, in every full bar.
+- Disk for one 5-minute track: 101 MB decoded source plus 223 MB of cached stems (the drum-free WAV is half of that).
+
+## Notes for later phases
+
+- beat-this finds no beats in plain sine clicks, so the smoke test uses a short groove instead.
+- The worker files are generated from `workers/_template/`; after editing a part, run the build script and `ruff check --fix` (the usage line in `build.py` says how).
