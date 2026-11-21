@@ -16,7 +16,13 @@ def _key(stage: str, **parts: object) -> str:
 
 
 def tracking_key(
-    audio_sha256: str, tracker: str, beats_per_bar: int | None, first_downbeat_index: int | None
+    audio_sha256: str,
+    tracker: str,
+    beats_per_bar: int | None,
+    first_downbeat_index: int | None,
+    *,
+    tempo_bpm: float | None = None,
+    first_beat_time: float | None = None,
 ) -> str:
     """Beat tracking reads the full mix, so the stems are not part of this key."""
     return _key(
@@ -25,6 +31,8 @@ def tracking_key(
         tracker=tracker,
         beats_per_bar=beats_per_bar,
         first_downbeat_index=first_downbeat_index,
+        tempo_bpm=tempo_bpm,
+        first_beat_time=first_beat_time,
     )
 
 

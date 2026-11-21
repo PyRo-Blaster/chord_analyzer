@@ -210,3 +210,34 @@ def test_each_finished_stage_is_reported(track, tmp_path):
     seen = []
     analyze(request(track, tmp_path), FakeRunner(track), on_stage=lambda r: seen.append(r.stage))
     assert seen == list(STAGES)
+
+
+def test_a_tapped_tempo_builds_the_grid_without_the_tracker(track, tmp_path):
+    analyze(request(track, tmp_path), FakeRunner(track))
+    runner = FakeRunner(track)
+    state = analyze(
+        request(track, tmp_path, beats_per_bar=4, tempo_bpm=100.0, first_beat_time=0.25), runner
+    )
+    assert runner.workers_called() == []
+    assert state.record("separating").cached and state.record("recognising").cached
+    assert not state.record("tracking").cached and not state.record("decoded").cached
+    grid = json.loads(Path(state.record("tracking").outputs["grid"]).read_text())
+    assert [beat["time"] for beat in grid[:3]] == [0.25, 0.85, 1.45]
+    assert grid[-1]["time"] < 8.0
+    assert [(beat["bar"], beat["beat"]) for beat in grid[:5]] == [
+        (1, 1), (1, 2), (1, 3), (1, 4), (2, 1),
+    ]  # fmt: skip
+
+
+@pytest.mark.parametrize(
+    ("fields", "message"),
+    [
+        ({"tempo_bpm": 100.0}, "first_beat_time"),
+        ({"first_beat_time": 0.5}, "tempo_bpm"),
+        ({"tempo_bpm": 5.0, "first_beat_time": 0.0}, "20 to 400"),
+        ({"tempo_bpm": 100.0, "first_beat_time": -1.0}, "not be negative"),
+    ],
+)
+def test_invalid_tapped_tempos_are_rejected(track, tmp_path, fields, message):
+    with pytest.raises(ValueError, match=message):
+        request(track, tmp_path, **fields)

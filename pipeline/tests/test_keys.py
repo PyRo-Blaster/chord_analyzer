@@ -36,3 +36,11 @@ def test_decoding_key_follows_every_input():
     }
     assert base not in others
     assert len(others) == 5
+
+
+def test_tracking_key_follows_a_tapped_tempo():
+    base = tracking_key(SHA, "beat-this", 4, None)
+    tapped = tracking_key(SHA, "beat-this", 4, None, tempo_bpm=120.0, first_beat_time=0.5)
+    assert base != tapped
+    assert tapped != tracking_key(SHA, "beat-this", 4, None, tempo_bpm=121.0, first_beat_time=0.5)
+    assert tapped != tracking_key(SHA, "beat-this", 4, None, tempo_bpm=120.0, first_beat_time=0.6)
