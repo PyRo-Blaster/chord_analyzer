@@ -1,0 +1,26 @@
+## separate_bsroformer
+bs-roformer-infer==0.1.5
+numpy==2.5.5
+soundfile==0.14.0
+torch==2.15.0
+## chords_lvchordia
+librosa==1.0.1
+lv-chordia==1.1.0
+numpy==2.5.5
+soundfile==0.14.0
+torch==2.15.0
+## chords_btc
+librosa==1.0.1
+numpy==2.5.5
+soundfile==0.14.0
+torch==2.15.0
+transformers==5.23.0
+## beats_beatthis
+beat-this==1.1.0
+numpy==2.5.5
+soundfile==0.14.0
+torch==2.15.0
+torchaudio==2.11.1
+## beats_madmom
+madmom==0.17.dev0
+numpy==1.26.4

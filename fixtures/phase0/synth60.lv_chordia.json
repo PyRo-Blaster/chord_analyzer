@@ -1,0 +1,157 @@
+[
+  {
+    "start_time": 0.0,
+    "end_time": 0.02,
+    "chord": "N"
+  },
+  {
+    "start_time": 0.02,
+    "end_time": 2.02,
+    "chord": "D:min7"
+  },
+  {
+    "start_time": 2.02,
+    "end_time": 3.99,
+    "chord": "G:9"
+  },
+  {
+    "start_time": 3.99,
+    "end_time": 6.06,
+    "chord": "C:maj7"
+  },
+  {
+    "start_time": 6.06,
+    "end_time": 7.99,
+    "chord": "A:7"
+  },
+  {
+    "start_time": 7.99,
+    "end_time": 10.03,
+    "chord": "D:min7"
+  },
+  {
+    "start_time": 10.03,
+    "end_time": 12.0,
+    "chord": "G:9"
+  },
+  {
+    "start_time": 12.0,
+    "end_time": 14.05,
+    "chord": "C:maj7"
+  },
+  {
+    "start_time": 14.05,
+    "end_time": 15.98,
+    "chord": "A:7"
+  },
+  {
+    "start_time": 15.98,
+    "end_time": 18.02,
+    "chord": "D:min7"
+  },
+  {
+    "start_time": 18.02,
+    "end_time": 19.99,
+    "chord": "G:9"
+  },
+  {
+    "start_time": 19.99,
+    "end_time": 22.06,
+    "chord": "C:maj7"
+  },
+  {
+    "start_time": 22.06,
+    "end_time": 23.99,
+    "chord": "A:9"
+  },
+  {
+    "start_time": 23.99,
+    "end_time": 26.03,
+    "chord": "D:min7"
+  },
+  {
+    "start_time": 26.03,
+    "end_time": 28.0,
+    "chord": "G:9"
+  },
+  {
+    "start_time": 28.0,
+    "end_time": 30.07,
+    "chord": "C:maj9"
+  },
+  {
+    "start_time": 30.07,
+    "end_time": 31.97,
+    "chord": "A:9"
+  },
+  {
+    "start_time": 31.97,
+    "end_time": 34.02,
+    "chord": "D:min7"
+  },
+  {
+    "start_time": 34.02,
+    "end_time": 36.01,
+    "chord": "G:9"
+  },
+  {
+    "start_time": 36.01,
+    "end_time": 38.06,
+    "chord": "C:maj7"
+  },
+  {
+    "start_time": 38.06,
+    "end_time": 39.98,
+    "chord": "A:7"
+  },
+  {
+    "start_time": 39.98,
+    "end_time": 42.03,
+    "chord": "D:min7"
+  },
+  {
+    "start_time": 42.03,
+    "end_time": 44.0,
+    "chord": "G:9"
+  },
+  {
+    "start_time": 44.0,
+    "end_time": 46.07,
+    "chord": "C:maj7"
+  },
+  {
+    "start_time": 46.07,
+    "end_time": 48.0,
+    "chord": "A:9"
+  },
+  {
+    "start_time": 48.0,
+    "end_time": 50.02,
+    "chord": "D:min7"
+  },
+  {
+    "start_time": 50.02,
+    "end_time": 52.01,
+    "chord": "G:9"
+  },
+  {
+    "start_time": 52.01,
+    "end_time": 54.08,
+    "chord": "C:maj7"
+  },
+  {
+    "start_time": 54.08,
+    "end_time": 55.98,
+    "chord": "A:7"
+  },
+  {
+    "start_time": 55.98,
+    "end_time": 58.03,
+    "chord": "D:min7"
+  },
+  {
+    "start_time": 58.03,
+    "end_time": 60.0,
+    "chord": "G:7"
+  }
+]
