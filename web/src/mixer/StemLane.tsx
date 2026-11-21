@@ -15,9 +15,10 @@ interface Props {
   readonly onSolo: () => void;
   readonly onGain: (gain: number) => void;
   readonly onSeek: (fraction: number) => void;
+  readonly progress: number; // 0 to 1, where the shared cursor is
 }
 
-export function StemLane({ lane, buffer, downloadUrl, onMute, onSolo, onGain, onSeek }: Props) {
+export function StemLane({ lane, buffer, downloadUrl, onMute, onSolo, onGain, onSeek, progress }: Props) {
   const canvas = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -69,6 +70,7 @@ export function StemLane({ lane, buffer, downloadUrl, onMute, onSolo, onGain, on
       </div>
       <div className="wave" data-testid="wave" onPointerDown={seek}>
         <canvas ref={canvas} width={WAVE_WIDTH} height={WAVE_HEIGHT} />
+        <div className="cursor" style={{ left: `${progress * 100}%` }} aria-hidden="true" />
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import type { StemView } from "../api/types";
 import type { AudioService } from "../audio/browserAudio";
 import type { LoopRange, StemBuffer } from "../audio/engine";
@@ -69,7 +69,7 @@ export function Mixer({ stems, trackName, audio }: Props) {
   }, [engine]);
 
   const duration = buffers === null ? 0 : engine.duration;
-  const cursorLeft = useMemo(() => (duration > 0 ? `${(position / duration) * 100}%` : "0%"), [position, duration]);
+  const progress = duration > 0 ? Math.min(1, position / duration) : 0;
 
   async function changeSpeed(next: number) {
     if (buffers === null) {
@@ -166,10 +166,10 @@ export function Mixer({ stems, trackName, audio }: Props) {
               onSolo={() => setLanes((current) => toggleSolo(current, lane.name))}
               onGain={(gain) => setLanes((current) => setGain(current, lane.name, gain))}
               onSeek={(fraction) => seek(fraction * duration)}
+              progress={progress}
             />
           );
         })}
-        <div className="cursor" style={{ left: cursorLeft }} aria-hidden="true" />
       </div>
     </section>
   );

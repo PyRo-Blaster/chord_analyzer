@@ -259,7 +259,7 @@ button.primary {
 
 .lane {
   display: grid;
-  grid-template-columns: minmax(260px, 340px) 1fr;
+  grid-template-columns: 400px 1fr;
   gap: 10px;
   align-items: center;
 }
@@ -296,6 +296,7 @@ button.primary {
   border: 1px solid var(--line);
   border-radius: 6px;
   overflow: hidden;
+  position: relative;
 }
 
 .lane.residue .wave {
@@ -313,7 +314,7 @@ button.primary {
   top: 0;
   bottom: 0;
   width: 2px;
-  margin-left: calc(min(340px, 32%) + 10px);
+  margin-left: -1px;
   background: var(--failed);
   pointer-events: none;
 }
@@ -321,8 +322,5 @@ button.primary {
 @media (max-width: 720px) {
   .lane {
     grid-template-columns: 1fr;
-  }
-  .cursor {
-    display: none;
   }
 }
