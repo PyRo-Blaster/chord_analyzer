@@ -44,6 +44,10 @@ function fakeClient(upload: ApiClient["upload"]): ApiClient {
     tracks: vi.fn().mockResolvedValue([]),
     track: vi.fn(),
     upload,
+    chords: vi.fn(),
+    saveEdits: vi.fn(),
+    setGrid: vi.fn(),
+    evidence: vi.fn(),
   };
 }
 

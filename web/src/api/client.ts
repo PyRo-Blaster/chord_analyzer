@@ -1,6 +1,17 @@
 import type { z } from "zod";
-import { CatalogueSchema, TrackSchema } from "./types";
-import type { Catalogue, Envelope, JobOptions, Track } from "./types";
+import { CatalogueSchema, ChordViewSchema, EvidenceSchema, TrackSchema } from "./types";
+import type {
+  Catalogue,
+  ChartEdit,
+  ChordView,
+  Envelope,
+  Evidence,
+  EvidenceSource,
+  ExportFormat,
+  GridView,
+  JobOptions,
+  Track,
+} from "./types";
 
 const API = "/api";
 const TrackListSchema = TrackSchema.array();
@@ -22,6 +33,14 @@ export interface ApiClient {
   tracks(): Promise<readonly Track[]>;
   track(id: string): Promise<Track>;
   upload(file: File, options: JobOptions): Promise<Track>;
+  chords(id: string): Promise<ChordView>;
+  saveEdits(id: string, edits: readonly ChartEdit[]): Promise<ChordView>;
+  setGrid(id: string, grid: GridView): Promise<Track>;
+  evidence(id: string, source: EvidenceSource): Promise<Evidence>;
+}
+
+export function exportUrl(id: string, format: ExportFormat): string {
+  return `${API}/tracks/${encodeURIComponent(id)}/export?format=${format}`;
 }
 
 export function createClient(fetcher: Fetcher = (input, init) => fetch(input, init)): ApiClient {
@@ -59,5 +78,14 @@ export function createClient(fetcher: Fetcher = (input, init) => fetch(input, in
       form.append("options", JSON.stringify(options));
       return call("/tracks", TrackSchema, { method: "POST", body: form });
     },
+    chords: (id) => call(`/tracks/${encodeURIComponent(id)}/chords`, ChordViewSchema),
+    saveEdits: (id, edits) => call(`/tracks/${encodeURIComponent(id)}/chart`, ChordViewSchema, json("PATCH", { edits })),
+    setGrid: (id, grid) => call(`/tracks/${encodeURIComponent(id)}/grid`, TrackSchema, json("PATCH", grid)),
+    evidence: (id, source) =>
+      call(`/tracks/${encodeURIComponent(id)}/evidence?source=${source}`, EvidenceSchema),
   };
+}
+
+function json(method: string, body: unknown): RequestInit {
+  return { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) };
 }
