@@ -21,9 +21,7 @@ def main(audio_path: str, out_path: str) -> int:
     rows = tracker(activations)  # each row: time in seconds, position in the bar
     result = {
         "beats": [float(time) for time, _ in rows],
-        "downbeats": [
-            float(time) for time, position in rows if int(position) == DOWNBEAT_POSITION
-        ],
+        "downbeats": [float(time) for time, position in rows if int(position) == DOWNBEAT_POSITION],
     }
     Path(out_path).write_text(json.dumps(result, indent=2), encoding="utf-8")
     print(f"{len(result['beats'])} beats, {len(result['downbeats'])} downbeats -> {out_path}")
