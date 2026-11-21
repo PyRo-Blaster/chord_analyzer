@@ -34,6 +34,19 @@ Nov 21, 2026 · built on Phase 3a–3c (`api/`, `web/`).
 
 ## Exit gate
 
-- [ ] Unit tests pass with coverage above 80% in every package.
-- [ ] The Playwright flow covers editing, export and a grid change.
-- [ ] By hand with the real models: the synthetic track shows Dm7 | G9 | Cmaj7 | A9, an edit survives a reload, and a change to 3/4 reruns only tracking and decoding.
+- [x] Unit tests pass with coverage above 80% in every package (core 328, pipeline 117, API 75, web 112).
+- [x] The Playwright flow covers editing, export and a grid change (3 tests).
+- [x] By hand with the real models: the synthetic track shows Dm7 | G9 | Cmaj7 | A9, an edit survives a reload, and a change to 3/4 reruns only tracking and decoding.
+
+## Results of the check by hand (Nov 21, 2026)
+
+The 5-minute synthetic track, analysed with the real models:
+
+- Chart: `Dm7 | G9 | Cmaj7 | A9` on the first line; BTC reads `Fmaj7 | G7 | Gmaj7 | A7`, so bars 1 and 3 are marked D and for review (66 of 151 bars marked in all).
+- An edit to Dm9 on beat 1 was saved through the API and read back after a fresh request, with the Dm7 draft kept next to it.
+- After `PATCH /grid` with 3 beats a bar, the stages were: uploaded cached, separating cached (287 s saved), **tracking ran (5.5 s)**, recognising cached, **decoded ran (1.1 s)**. Bar 1 has 3 beats, no edit was unplaced, and the Dm9 edit is still on beat 1.
+
+## Changes made during the slice
+
+- A click on a chord selects the whole chord. The first version selected only its first beat, so saving a label split the chord without warning. Single beats are now selected on the bass row under the chord.
+- The server sends the parsed parts of each model label, so the "BTC: …" and "lv-chordia: …" suggestions need no chord parsing in the browser.
